@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -30,6 +31,10 @@ public class FlickrFetchr {
     private static final String PARAM_JSON ="json";
     private static final String TAG = "FlickrFetchr";
     private static final String EXTRA_SMALL_URL = "url_s";
+
+    private static final String JSON_ID = "id";
+    private static final String JSON_CAPTION = "title";
+    private static final String JSON_URL = "url_s";
 
     private static final String XML_PHOTO = "photo";
 
@@ -60,7 +65,9 @@ public class FlickrFetchr {
     public String getUrl(String urlSpec) throws IOException{
         return new String(getUrlBytes(urlSpec));
     }
-    public void fetchItems(){
+
+    public ArrayList<GalleryItem> fetchItems(){
+        ArrayList<GalleryItem> items = new ArrayList<GalleryItem>();
         String jsonString = null;
         try {
             String url = Uri.parse(ENDPOINT).buildUpon()
@@ -97,7 +104,13 @@ public class FlickrFetchr {
                         // now we have json array object...
                         JSONArray arrayObject = (JSONArray) new JSONTokener(photoStream).nextValue();
                         for( int i = 0; i < arrayObject.length(); ++i ){
-                            Log.i(TAG, "Got object -" +  arrayObject.getJSONObject(i).toString());
+                            GalleryItem item = new GalleryItem();
+                            JSONObject jsonPhoto = arrayObject.getJSONObject(i);
+                            Log.i(TAG, "Got object -" + jsonPhoto.toString());
+                            item.setId(jsonPhoto.getString(JSON_ID));
+                            item.setCaption(jsonPhoto.getString(JSON_CAPTION));
+                            item.setUrl(jsonPhoto.getString(JSON_URL));
+                            items.add(item);
                         }
                     }
                 }
@@ -105,6 +118,6 @@ public class FlickrFetchr {
                 Log.e(TAG, "json error" + je);
             }
         }
-
+        return items;
     }
 }
