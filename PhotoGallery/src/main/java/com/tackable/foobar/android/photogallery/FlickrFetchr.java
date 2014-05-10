@@ -3,6 +3,11 @@ package com.tackable.foobar.android.photogallery;
 import android.net.Uri;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +26,8 @@ public class FlickrFetchr {
     private static final String API_KEY = "0073e3ffe50f16aeece2b0e16ae03601";
     private static final String METHOD_GET_RECENT = "flickr.photos.getRecent";
     private static final String PARAM_EXTRAS = "extras";
+    private static final String PARAM_FORMAT = "format";
+    private static final String PARAM_JSON ="json";
     private static final String TAG = "FlickrFetchr";
     private static final String EXTRA_SMALL_URL = "url_s";
 
@@ -54,19 +61,50 @@ public class FlickrFetchr {
         return new String(getUrlBytes(urlSpec));
     }
     public void fetchItems(){
+        String jsonString = null;
         try {
             String url = Uri.parse(ENDPOINT).buildUpon()
                     .appendQueryParameter("method", METHOD_GET_RECENT)
                     .appendQueryParameter("api_key", API_KEY)
+                    .appendQueryParameter(PARAM_FORMAT, PARAM_JSON)
                     .appendQueryParameter(PARAM_EXTRAS, EXTRA_SMALL_URL)
                     .build().toString();
             Log.i(TAG, "requested URL is ------ " + url);
-            String xmlString = getUrl(url);
-            Log.i(TAG, "received items: " + xmlString);
-
+            jsonString = getUrl(url);
+//            Log.i(TAG, "received items: " + jsonString);
         }
-        catch (IOException ioe ){
+        catch (IOException ioe){
             Log.e(TAG, "Failed to fetch items " + ioe);
         }
+        if( jsonString != null ) {
+            try {
+                // need to remove jsonFlickrApi( from start
+                // need to remove ) from end for some crappy reason flickr put that in there
+                String start = "jsonFlickrApi(";
+                String end = ")";
+                if( jsonString.length() > start.length() + end.length()){
+                    jsonString = jsonString.substring(start.length(), jsonString.length()  - end.length());
+                }
+                JSONObject object = (JSONObject) new JSONTokener(jsonString).nextValue();
+
+                String photoString = object.getString("photos");
+                if( null != photoString ){
+                    JSONObject jsonSubObject = (JSONObject) new JSONObject(photoString);
+                    String photoStream = jsonSubObject.getString("photo");
+                    if( photoStream != null ){
+//                        Log.i(TAG,"-------------");
+//                        Log.i(TAG, photoStream);
+                        // now we have json array object...
+                        JSONArray arrayObject = (JSONArray) new JSONTokener(photoStream).nextValue();
+                        for( int i = 0; i < arrayObject.length(); ++i ){
+                            Log.i(TAG, "Got object -" +  arrayObject.getJSONObject(i).toString());
+                        }
+                    }
+                }
+            } catch (JSONException je) {
+                Log.e(TAG, "json error" + je);
+            }
+        }
+
     }
 }
