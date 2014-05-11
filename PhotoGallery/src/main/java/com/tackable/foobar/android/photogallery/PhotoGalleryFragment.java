@@ -7,9 +7,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.GridView;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by stevenwoo on 5/9/14.
@@ -17,6 +19,7 @@ import java.io.IOException;
 public class PhotoGalleryFragment extends Fragment {
     GridView mGridView;
 
+    ArrayList<GalleryItem> mItems;
     private static final String TAG = "PhotoGalleryFragment";
 
     @Override
@@ -26,6 +29,18 @@ public class PhotoGalleryFragment extends Fragment {
         new FetchItemsTask().execute();
     }
 
+    void setupAdapter(){
+        if( getActivity() == null ||mGridView == null ){
+            return;
+        }
+        if(mItems != null){
+            mGridView.setAdapter(new ArrayAdapter<GalleryItem>(getActivity(),
+                    android.R.layout.simple_gallery_item, mItems));
+        }
+        else{
+            mGridView.setAdapter(null);
+        }
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -33,23 +48,21 @@ public class PhotoGalleryFragment extends Fragment {
 
         mGridView = (GridView) v.findViewById(R.id.gridView);
 
+        setupAdapter();
 
         return v;
     }
 
-    private class FetchItemsTask extends AsyncTask<Void,Void,Void> {
+    private class FetchItemsTask extends AsyncTask<Void,Void,ArrayList<GalleryItem>> {
         @Override
-        protected Void doInBackground(Void... params) {
-//            try {
-//                String result = new FlickrFetchr().getUrl("http://www.flickr.com/swoo");
-                new FlickrFetchr().fetchItems();
-                //Log.i(TAG, "Fetched contents of url " + result);
-//            }
- //           catch (IOException ioe) {
- //               Log.e(TAG, "failed to fetch URL", ioe);
-  //          }
-            return null;
+        protected ArrayList<GalleryItem> doInBackground(Void... params) {
+            return new FlickrFetchr().fetchItems();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<GalleryItem> items) {
+            mItems = items;
+            setupAdapter();
         }
     }
-
 }
