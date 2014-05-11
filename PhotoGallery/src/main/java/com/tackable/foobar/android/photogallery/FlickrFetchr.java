@@ -106,7 +106,7 @@ public class FlickrFetchr {
                         for( int i = 0; i < arrayObject.length(); ++i ){
                             GalleryItem item = new GalleryItem();
                             JSONObject jsonPhoto = arrayObject.getJSONObject(i);
-                            Log.i(TAG, "Got object -" + jsonPhoto.toString());
+//                            Log.i(TAG, "Got object -" + jsonPhoto.toString());
                             item.setId(jsonPhoto.getString(JSON_ID));
                             item.setCaption(jsonPhoto.getString(JSON_CAPTION));
                             item.setUrl(jsonPhoto.getString(JSON_URL));
