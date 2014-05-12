@@ -6,6 +6,7 @@ import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -38,6 +39,18 @@ public class PhotoGalleryFragment extends Fragment {
 
     private static final String TAG = "PhotoGalleryFragment";
 
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
+        if (PollService.isServiceAlarmOn(getActivity())) {
+            toggleItem.setTitle(R.string.stop_polling);
+        } else {
+            toggleItem.setTitle(R.string.start_polling);
+        }
+
+    }
+
     @TargetApi(11)
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -57,7 +70,7 @@ public class PhotoGalleryFragment extends Fragment {
             searchView.setSearchableInfo(searchInfo);
         }
     }
-
+    @TargetApi(11)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch( item.getItemId()){
@@ -70,6 +83,14 @@ public class PhotoGalleryFragment extends Fragment {
                 return true;
             case R.id.menu_item_search:
                 getActivity().onSearchRequested();
+                return true;
+            case R.id.menu_item_toggle_polling:
+                boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+                PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    getActivity().invalidateOptionsMenu();
+                }
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -86,6 +107,8 @@ public class PhotoGalleryFragment extends Fragment {
         setHasOptionsMenu(true);
         updateItems();
 
+        Intent i = new Intent(getActivity(), PollService.class);
+        getActivity().startService(i);
         mThumbnailThread = new ThumbnailDownloader<ImageView>(new android.os.Handler());
         mThumbnailThread.setListener(new ThumbnailDownloader.Listener<ImageView>() {
             public void onThumbnailDownloaded(ImageView imageView, Bitmap thumbnail) {

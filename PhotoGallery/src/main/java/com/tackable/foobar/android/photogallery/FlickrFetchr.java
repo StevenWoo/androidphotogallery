@@ -39,6 +39,7 @@ public class FlickrFetchr {
     private static final String JSON_URL = "url_s";
 
     public static final String PREF_SEARCH_QUERY = "searchQuery";
+    public static final String PREF_LAST_RESULT_ID = "lastResultId";
 
     private static final String XML_PHOTO = "photo";
 

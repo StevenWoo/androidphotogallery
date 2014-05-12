@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tackable.foobar.android.photogallery" >
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -20,6 +21,7 @@
             </intent-filter>
             <meta-data android:name="android.app.searchable" android:resource="@xml/searchable" />
         </activity>
+        <service android:name=".PollService" />
     </application>
 
 </manifest>
